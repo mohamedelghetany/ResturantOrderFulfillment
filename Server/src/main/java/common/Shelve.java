@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 
+/**
+ * Encapsulate a "Shelve" with a list of Orders on it
+ */
 public class Shelve {
   private final String name;
   private final int capacity;

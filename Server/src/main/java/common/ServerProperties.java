@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 /**
  * Encapsulates all properties needed to configure the server.
  *
- * Each property has a default value but it can be overriden by
+ * Each property has a default value but it can be overridden by
  * adding the property key in config.properties file
  *
  * The keys in config.properties takes precedence over the default value.
@@ -38,11 +38,11 @@ public final class ServerProperties {
 
   public static PropertyKey<Integer> PORT = new IntegerPropertyKey("port", 11211);
   public static PropertyKey<Integer> statsReporterIntervalInMS = new IntegerPropertyKey("statsReporterIntervalInMS", 60000);
-  public static PropertyKey<Integer> orderGCIntervalInMS = new IntegerPropertyKey("orderGCIntervalInMS", 1000);
+  public static PropertyKey<Integer> orderShelveGarbageCollectorIntervalInMS = new IntegerPropertyKey("orderShelveGarbageCollectorIntervalInMS", 1000);
   public static PropertyKey<Integer> dispatcherLowWaitTimeInSeconds = new IntegerPropertyKey("dispatcherLowWaitTimeInSeconds", 2);
   public static PropertyKey<Integer> dispatcherHighWaitTimeInSeconds = new IntegerPropertyKey("dispatcherHighWaitTimeInSeconds", 6);
-  public static PropertyKey<Integer> numOfThreadsForOrderProcessing = new IntegerPropertyKey("numOfThreadsForOrderProcessing", 10);
-  public static PropertyKey<Integer> numOfThreadsForDispatching = new IntegerPropertyKey("numOfThreadsForDispatching", 10);
+  public static PropertyKey<Integer> numOfThreadsForOrderProcessing = new IntegerPropertyKey("numOfThreadsForOrderProcessing", Runtime.getRuntime().availableProcessors() * 2);
+  public static PropertyKey<Integer> numOfThreadsForDispatching = new IntegerPropertyKey("numOfThreadsForDispatching", Runtime.getRuntime().availableProcessors() * 2);
 
   public static abstract class PropertyKey<T> {
     private final String key;

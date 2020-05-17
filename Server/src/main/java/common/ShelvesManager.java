@@ -9,7 +9,9 @@ import javax.annotation.Nonnull;
 import org.apache.log4j.Logger;
 
 /**
- * Encapsulates all the logic of choosing a shelve and placing an order on the chosen shelve
+ * Encapsulates all the logic of choosing a shelve and placing an order on that shelve. It is a singleton thread-safe class
+ * Also this class encapsulates a {@link ShelveOrderGarbageCollector} which is a GC for expired orders.
+ * The GC runs on a diff thread on an interval decided by {@link ServerProperties#orderShelveGarbageCollectorIntervalInMS}
  */
 public class ShelvesManager {
   private final static Logger logger = Logger.getLogger(ShelvesManager.class);
@@ -22,7 +24,7 @@ public class ShelvesManager {
     shelves = new ConcurrentHashMap<>();
     shelveOrderGarbageCollector = new ShelveOrderGarbageCollector();
 
-    for(final Temp temp : Temp.values()) {
+    for (final Temp temp : Temp.values()) {
       shelves.put(temp, new Shelve(temp.getShelfName(), temp.getCapacity(), temp));
     }
 
@@ -84,7 +86,7 @@ public class ShelvesManager {
       return Optional.of(overflowShelve);
     }
 
-    shelveOrderGarbageCollector.forceRun();
+    shelveOrderGarbageCollector.runNow();
 
     // Try adding again to overflow
     if (overflowShelve.addOrder(order)) {
@@ -109,7 +111,7 @@ public class ShelvesManager {
 
   /**
    * A background thread that will take care of cleaning the shelves from any expired orders
-   * The GC runs on a timer controlled by {@link ServerProperties#orderGCIntervalInMS}
+   * The GC runs on a timer controlled by {@link ServerProperties#orderShelveGarbageCollectorIntervalInMS}
    */
   public class ShelveOrderGarbageCollector implements Runnable {
     private Logger logger = Logger.getLogger(ShelveOrderGarbageCollector.class);
@@ -120,8 +122,8 @@ public class ShelvesManager {
 
       while (true) {
         try {
-          forceRun();
-          Thread.sleep(ServerProperties.orderGCIntervalInMS.get());
+          runNow();
+          Thread.sleep(ServerProperties.orderShelveGarbageCollectorIntervalInMS.get());
         } catch (final Exception e) {
           // We want this thread to keep running so we don't wanna any exception to escape
           logger.error("Error while collecting order", e);
@@ -129,7 +131,7 @@ public class ShelvesManager {
       }
     }
 
-    public void forceRun() {
+    public void runNow() {
       logger.debug("Cleaning up all shelves");
 
       final Set<Temp> keySet = shelves.keySet();

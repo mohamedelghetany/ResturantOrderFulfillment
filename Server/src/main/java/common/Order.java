@@ -2,6 +2,7 @@ package common;
 
 import com.google.gson.Gson;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 
 /**
@@ -16,9 +17,12 @@ import javax.annotation.Nonnull;
  * "decayRate": 0.26
  * },
  */
-public class Order {
+public final class Order {
+  @Nonnull
   private String id;
+  @Nonnull
   private String name;
+  @Nonnull
   private Temp temp;
   private int shelfLife;
   private float orderLife;
@@ -38,6 +42,16 @@ public class Order {
     this.decayRate = decayRate;
     this.orderLife = 0;
     this.createTimeStamp = System.currentTimeMillis();
+  }
+
+  /**
+   * Encapsulate Deserialization logic, I want to hide that fact that we are using Gson
+   *
+   * @param jsonOrder to be deserialized
+   * @return {@link Order} represents the given input orderJson
+   */
+  public static Order createFromJson(@Nonnull final String jsonOrder) {
+    return new Gson().fromJson(jsonOrder, Order.class);
   }
 
   public float getDecayRate() {
@@ -60,18 +74,56 @@ public class Order {
     return id;
   }
 
+  public long getCreateTimeStamp() {
+    return createTimeStamp;
+  }
+
+  public long getAgeInSeconds() {
+    return ageInSeconds;
+  }
+
+  public float getOrderLife() {
+    return orderLife;
+  }
+
   @Override
   public String toString() {
     return new Gson().toJson(this);
   }
 
   public float updateAndGetLife() {
-    this.ageInSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - createTimeStamp);
+    return updateAndGetLife(() -> System.currentTimeMillis());
+  }
+
+  public float updateAndGetLife(@Nonnull final Supplier<Long> timeReferenceSupplier) {
+    this.ageInSeconds = TimeUnit.MILLISECONDS.toSeconds(timeReferenceSupplier.get() - createTimeStamp);
 
     orderLife = ((shelfLife - decayRate * ageInSeconds * temp.getDecayModifier()) / shelfLife);
 
     return orderLife;
   }
 
+  @Override
+  public int hashCode() {
+    return (this.id + this.name + this.decayRate + this.temp + this.shelfLife).hashCode();
+  }
 
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+
+    if (obj == null || this.getClass() != obj.getClass()) {
+      return false;
+    }
+
+    final Order order = (Order) obj;
+
+    return order.id.equals(id) &&
+        order.name.equals(name) &&
+        order.temp.equals(temp) &&
+        order.shelfLife == shelfLife &&
+        Float.compare(order.decayRate, decayRate) == 0;
+  }
 }

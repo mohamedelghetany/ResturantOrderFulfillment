@@ -23,7 +23,7 @@ public class OrdersQueue implements Queue {
   }
 
   @Override
-  public void add(@Nonnull Order order) {
-    deque.offer(order);
+  public boolean add(@Nonnull Order order) {
+    return deque.offer(order);
   }
 }

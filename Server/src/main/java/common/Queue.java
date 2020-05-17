@@ -14,6 +14,7 @@ public interface Queue {
    * add message to the queue
    *
    * @param order to be added
+   * @return true if the given Order has been added to the queue, false otherwise
    */
-  void add(@Nonnull final Order order);
+  boolean add(@Nonnull final Order order);
 }
