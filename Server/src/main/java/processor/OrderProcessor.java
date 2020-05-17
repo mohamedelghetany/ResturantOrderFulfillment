@@ -32,12 +32,12 @@ public class OrderProcessor implements Runnable {
     while (condition.get()) {
       try {
         final Order order = queue.fetch();
-        logger.debug(String.format("Processing order %s", order));
+        logger.info(String.format("Processing order %s", order));
 
         final Optional<Shelve> shelve = ShelvesManager.getInstance().addOrder(order);
 
         if(shelve.isPresent()){
-          logger.info(String.format("Added order to shelve %s", shelve));
+          logger.info(String.format("Added order to shelve %s", shelve.get()));
         }else {
           logger.error(String.format("Failed to add an order to any shelve"));
         }

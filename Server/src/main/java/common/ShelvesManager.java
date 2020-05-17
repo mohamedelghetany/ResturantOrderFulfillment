@@ -140,7 +140,7 @@ public class ShelvesManager {
         for (final Iterator<Order> it = shelve.getOrdersIterator(); it.hasNext(); ) {
           final Order order = it.next();
 
-          if (order.updateAndGetLife() <= 0) {
+          if (order.updateAndGetLife() <= 0f) {
             shelve.removeOrder(order);
             logger.info(String.format("Removed an expired order %s", order));
           }

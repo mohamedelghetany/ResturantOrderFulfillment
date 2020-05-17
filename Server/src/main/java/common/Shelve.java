@@ -1,6 +1,5 @@
 package common;
 
-import com.google.gson.Gson;
 import io.netty.util.internal.ConcurrentSet;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,7 +12,7 @@ public class Shelve {
   private final ConcurrentSet<Order> orders;
   private AtomicInteger count;
 
-  public Shelve(String name, int capacity, Temp temperature) {
+  public Shelve(@Nonnull final String name, final int capacity, @Nonnull final Temp temperature) {
     this.name = name;
     this.capacity = capacity;
     this.temperature = temperature;
@@ -56,6 +55,6 @@ public class Shelve {
 
   @Override
   public String toString() {
-    return new Gson().toJson(this);
+    return name;
   }
 }

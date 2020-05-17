@@ -1,10 +1,11 @@
 package common;
 
 import com.google.gson.Gson;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
 /**
- * Data model for an common.Order
+ * Data model for an Order
  *
  * Example:
  * {
@@ -20,9 +21,10 @@ public class Order {
   private String name;
   private Temp temp;
   private int shelfLife;
-  private int orderLife;
+  private float orderLife;
   private float decayRate;
   private final long createTimeStamp;
+  private long ageInSeconds;
 
   public Order() {
     this.createTimeStamp = System.currentTimeMillis();
@@ -63,8 +65,10 @@ public class Order {
     return new Gson().toJson(this);
   }
 
-  public int updateAndGetLife() {
-    orderLife = (int) ((shelfLife - decayRate * (System.currentTimeMillis() - createTimeStamp) * temp.getDecayModifier()) / shelfLife);
+  public float updateAndGetLife() {
+    this.ageInSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - createTimeStamp);
+
+    orderLife = ((shelfLife - decayRate * ageInSeconds * temp.getDecayModifier()) / shelfLife);
 
     return orderLife;
   }

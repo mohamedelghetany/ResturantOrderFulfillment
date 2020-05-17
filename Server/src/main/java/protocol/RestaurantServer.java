@@ -3,8 +3,6 @@ package protocol;
 import common.OrdersQueue;
 import common.Queue;
 import common.ServerProperties;
-import common.ShelvesManager;
-import courier.Dispatcher;
 import courier.DispatcherManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -16,6 +14,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.log4j.Logger;
 import processor.OrderProcessorManager;
 
@@ -32,11 +32,11 @@ import processor.OrderProcessorManager;
 public class RestaurantServer {
   private static final Logger logger = Logger.getLogger(RestaurantServer.class);
   private final int port;
-  private int availableProcessorsCount;
+  private int nettyWorkerThreadCount;
 
   public RestaurantServer(final int port, int availableProcessorsCount) {
     this.port = port;
-    this.availableProcessorsCount = availableProcessorsCount;
+    this.nettyWorkerThreadCount = availableProcessorsCount;
   }
 
   private void initAndRun() throws InterruptedException {
@@ -44,7 +44,7 @@ public class RestaurantServer {
 
     final EventLoopGroup bossGroup = new NioEventLoopGroup();
     // This can be changed by -Dio.netty.eventLoopThreads
-    final EventLoopGroup workerGroup = new NioEventLoopGroup(availableProcessorsCount);
+    final EventLoopGroup workerGroup = new NioEventLoopGroup(nettyWorkerThreadCount);
 
     try {
       final Queue orderQueue = new OrdersQueue();
@@ -52,8 +52,9 @@ public class RestaurantServer {
       final OrderProcessorManager orderProcessorManager = new OrderProcessorManager(orderQueue);
       final DispatcherManager dispatcherManager = new DispatcherManager(dispatcherQueue);
       orderProcessorManager.initialize();
-      // dispatcherManager.initialize();
+      dispatcherManager.initialize();
 
+      final EventExecutorGroup handlerGroup = new DefaultEventExecutorGroup(nettyWorkerThreadCount);
       final ServerBootstrap serverBootstrap = new ServerBootstrap();
       serverBootstrap.group(bossGroup, workerGroup);
       serverBootstrap.channel(NioServerSocketChannel.class);
@@ -61,8 +62,7 @@ public class RestaurantServer {
         protected void initChannel(SocketChannel ch) {
           ch.pipeline().addLast(new HttpServerCodec());
           ch.pipeline().addLast(new HttpObjectAggregator(Integer.MAX_VALUE));
-          // Here in OrderHandler, we can pass an EventExecutorGroup, but for the scope of our service, I think that will be an overkill
-          ch.pipeline().addLast(new OrderHandler(orderQueue, dispatcherQueue));
+          ch.pipeline().addLast(handlerGroup, "OrderHandler" ,new OrderHandler(orderQueue, dispatcherQueue));
         }
       });
       serverBootstrap.option(ChannelOption.SO_BACKLOG, 128);
