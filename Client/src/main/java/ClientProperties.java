@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 /**
  * Encapsulates all properties needed to configure the client.
  *
- * Each property has a default value but it can be overriden by
+ * Each property has a default value but it can be overridden by
  * adding the property key in config.properties file
  *
  * The keys in config.properties takes precedence over the default value.

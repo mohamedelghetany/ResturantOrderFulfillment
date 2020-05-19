@@ -14,6 +14,10 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.log4j.Logger;
 
+/**
+ * A simple class to that sends orders to the server with a specific rate.
+ * Main method is {@link OrderSender#sendOrders(List, int)}
+ */
 public final class OrderSender {
   private static final Logger logger = Logger.getLogger(OrderSender.class);
   private final CloseableHttpAsyncClient httpClient;
@@ -25,6 +29,12 @@ public final class OrderSender {
     httpClient.start();
   }
 
+  /**
+   * Send the list of orders with the given rate
+   *
+   * @param orders to be sent
+   * @param rate that will be used to send the orders
+   */
   public void sendOrders(@Nonnull final List<Order> orders, final int rate) {
     Preconditions.checkNotNull(orders);
 
