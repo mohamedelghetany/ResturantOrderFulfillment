@@ -72,7 +72,7 @@ public class ShelveManagerTest {
   }
 
   @Test
-  public void testAddOrderToTheRightShelveAfterBeingFull2() {
+  public void testAddOrderTryToMoveOrdersToTheRightShelveFirstIfPossible() {
     // Fill all the shelves
     final List<Order> ordersHot = createAndAddRandomOrders(Temp.HOT.getCapacity(), Temp.HOT, "ordersHot");
     final List<Order> ordersCold = createAndAddRandomOrders(Temp.COLD.getCapacity(), Temp.COLD, "ordersCold");
@@ -87,7 +87,7 @@ public class ShelveManagerTest {
     final ShelvesManager manager = ShelvesManager.getInstance();
     Assert.assertTrue(manager.removeOrder(ordersHot.get(0)));
 
-    // Add new cold order, cold is full so it should go to overflow after moving one Hot order to Hot shelf
+    // Add new cold order, cold shelf is full so it should go to overflow after moving one Hot order to Hot shelf
     final Order order = new Order(String.valueOf(2000), "newOrderCold-100", Temp.COLD, 100, 0.5f);
     Optional<Shelve> shelve = manager.addOrder(order);
 

@@ -1,9 +1,10 @@
 package common;
 
-import io.netty.util.internal.ConcurrentSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.apache.log4j.Logger;
@@ -17,14 +18,14 @@ public class Shelve {
   private final String name;
   private final int capacity;
   private final Temp temperature;
-  private final ConcurrentSet<Order> orders;
+  private final ConcurrentMap<String, Order> orders;
   private AtomicInteger count;
 
   public Shelve(@Nonnull final String name, final int capacity, @Nonnull final Temp temperature) {
     this.name = name;
     this.capacity = capacity;
     this.temperature = temperature;
-    orders = new ConcurrentSet<>();
+    orders = new ConcurrentHashMap<>();
     count = new AtomicInteger();
   }
 
@@ -33,37 +34,35 @@ public class Shelve {
       return false;
     }
 
-    final boolean result = orders.add(order);
+    orders.put(getKey(order), order);
+    count.incrementAndGet();
 
-    if (result) {
-      count.incrementAndGet();
-    }
-
-    return result;
+    return true;
   }
 
   public boolean removeOrder(@Nonnull final Order order) {
-    final boolean result = orders.remove(order);
-
-    if (result) {
-      count.decrementAndGet();
+    if(!orders.containsKey(getKey(order))) {
+      return false;
     }
 
-    return result;
+    orders.remove(getKey(order));
+    count.decrementAndGet();
+
+    return true;
   }
 
   public boolean hasOrder(@Nonnull final Order order) {
-    return orders.contains(order);
+    return orders.containsKey(getKey(order));
   }
 
   public Iterator<Order> getOrdersIterator() {
-    return orders.iterator();
+    return orders.values().iterator();
   }
 
   public List<Order> removeExpiredOrders() {
     final List<Order> result = new ArrayList<>();
 
-    for (final Iterator<Order> it = orders.iterator(); it.hasNext(); ) {
+    for (final Iterator<Order> it = getOrdersIterator(); it.hasNext(); ) {
       final Order order = it.next();
 
       if (order.updateAndGetLife() <= 0f) {
@@ -87,5 +86,9 @@ public class Shelve {
 
   public String getName() {
     return name;
+  }
+
+  private String getKey(Order order) {
+    return order.getId();
   }
 }
