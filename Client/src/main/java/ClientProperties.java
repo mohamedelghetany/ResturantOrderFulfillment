@@ -34,7 +34,7 @@ public final class ClientProperties {
     }
   }
 
-  public static PropertyKey<Integer> RATE = new IntegerPropertyKey("rate", 2000);
+  public static PropertyKey<Integer> RATE = new IntegerPropertyKey("rate", 2);
 
   public static abstract class PropertyKey<T> {
     private final String key;

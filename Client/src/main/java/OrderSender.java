@@ -1,62 +1,63 @@
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.RateLimiter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.log4j.Logger;
 
-public class OrderSender implements Runnable {
+public final class OrderSender {
   private static final Logger logger = Logger.getLogger(OrderSender.class);
-  @Nonnull
-  private final Supplier<List<Order>> ordersSupplier;
-  private final int rate;
+  private final CloseableHttpAsyncClient httpClient;
 
-  public OrderSender(@Nonnull final Supplier<List<Order>> ordersSupplier, final int rate) {
-    Preconditions.checkArgument(ordersSupplier != null, "ordersSupplier can not be null");
-    Preconditions.checkArgument(rate > 0, "rate can not be < 0");
-
-    this.ordersSupplier = ordersSupplier;
-    this.rate = rate;
+  public OrderSender() {
+    httpClient = HttpAsyncClients.createDefault();
+    httpClient.start();
   }
 
-  private boolean sendOrder(@Nonnull final Order order) throws IOException {
-    final Response execute = Request.Post("http://localhost:11211")
-        .bodyString(order.toString(), ContentType.APPLICATION_JSON)
-        .execute();
+  public void sendOrders(@Nonnull final List<Order> orders, final int rate) {
+    Preconditions.checkNotNull(orders);
 
-    final HttpResponse httpResponse = execute.returnResponse();
-    logger.info(httpResponse.getEntity().getContent());
+    final RateLimiter rateLimiter = RateLimiter.create(rate);
+    IntStream.range(0, 4).forEach(index -> {
+      rateLimiter.acquire();
+      sendOrder(orders.get(index));
+    });
+  }
+
+  private boolean sendOrder(@Nonnull final Order order) {
+    logger.info(String.format("Sending Order %s", order));
+
+    final HttpPost request = new HttpPost("http://localhost:8080");
+    request.setEntity(new StringEntity(order.toString(), ContentType.APPLICATION_JSON));
+
+    httpClient.execute(request, new FutureCallback<HttpResponse>() {
+      @Override
+      public void completed(HttpResponse httpResponse) {
+        logger.debug(String.format("Order Sent %s Status %s", order, httpResponse.getStatusLine()));
+      }
+
+      @Override
+      public void failed(Exception e) {
+        logger.error(String.format("Failed to send order %s", order), e);
+      }
+
+      @Override
+      public void cancelled() {
+      }
+    });
+
     return true;
-  }
-
-  @Override
-  public void run() {
-    int limit = 1;
-    int count = limit;
-    for (Order order : ordersSupplier.get()) {
-      if (count > limit) {
-        break;
-      }
-      count++;
-      try {
-        logger.info(String.format("Sending Order %s", order));
-
-        sendOrder(order);
-
-        logger.info(String.format("Waiting %s for next order", rate));
-        Thread.sleep(rate);
-
-        break;
-      } catch (InterruptedException | MalformedURLException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
   }
 }
