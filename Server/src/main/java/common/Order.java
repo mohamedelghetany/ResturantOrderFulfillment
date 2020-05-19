@@ -32,6 +32,7 @@ public final class Order {
 
   public Order() {
     this.createTimeStamp = System.currentTimeMillis();
+    updateAndGetLife();
   }
 
   public Order(@Nonnull final String id, @Nonnull final String name, @Nonnull final Temp temp, final int shelfLife, final float decayRate) {
@@ -96,6 +97,10 @@ public final class Order {
   }
 
   public float updateAndGetLife(@Nonnull final Supplier<Long> timeReferenceSupplier) {
+    if(shelfLife <= 0) {
+      return 0f; // avoid dividing by 0
+    }
+
     this.ageInSeconds = TimeUnit.MILLISECONDS.toSeconds(timeReferenceSupplier.get() - createTimeStamp);
 
     orderLife = ((shelfLife - decayRate * ageInSeconds * temp.getDecayModifier()) / shelfLife);

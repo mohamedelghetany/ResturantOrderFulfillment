@@ -41,7 +41,7 @@ public class Dispatcher implements Runnable {
 
         Thread.sleep(TimeUnit.SECONDS.toMillis(randomWait));
 
-        if (ShelvesManager.getInstance().getOrder(order)) {
+        if (ShelvesManager.getInstance().removeOrder(order)) {
           logger.info(String.format("Dispatcher picked-up order %s", order));
         } else {
           logger.error(String.format("Dispatcher failed to pickup order %s", order));

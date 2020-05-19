@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  */
 public class ShelvesManager {
   private final static Logger logger = Logger.getLogger(ShelvesManager.class);
-  private static ShelvesManager INSTANCE;
+  private static volatile ShelvesManager INSTANCE;
 
   private final ConcurrentMap<Temp, Shelve> shelves;
   private final ShelveOrderGarbageCollector shelveOrderGarbageCollector;
@@ -45,6 +45,10 @@ public class ShelvesManager {
     return INSTANCE;
   }
 
+  public static void reset() {
+    INSTANCE = null;
+  }
+
   /**
    * Handles adding Order to a shelves
    *
@@ -52,17 +56,22 @@ public class ShelvesManager {
    * @return {@link Shelve} that the order added to, {@link Optional#empty()} if no shelves are available
    */
   public Optional<Shelve> addOrder(@Nonnull final Order order) {
+    // Clean-up the shelve (remove expired orders)
     // Try adding the order to its shelve
     final Shelve shelve = shelves.get(order.getTemp());
+
+    shelve.removeExpiredOrders();
 
     if (shelve.addOrder(order)) {
       logger.debug(String.format("Added Order to shelve. Order: %s, shelve: %s", order, shelve));
       return Optional.of(shelve);
     }
 
-    // Order's temperature shelve is full so lets
+    // Order's shelve is full so lets
     // try the overflow shelve
     final Shelve overflowShelve = shelves.get(Temp.ANY);
+
+    overflowShelve.removeExpiredOrders();
 
     if (overflowShelve.addOrder(order)) {
       logger.debug(String.format("Added Order to Overflow shelve. Order: %s, shelve: %s", order, shelve));
@@ -76,19 +85,12 @@ public class ShelvesManager {
     for (Iterator<Order> it = overflowShelve.getOrdersIterator(); it.hasNext(); ) {
       final Order overflowOrder = it.next();
       if (shelves.get(overflowOrder.getTemp()).addOrder(overflowOrder)) {
+        overflowShelve.removeOrder(overflowOrder);
         logger.debug(String.format("Moved Order. From Overflow shelve to %s shelve. Order: %s", shelve, order));
       }
     }
 
-    // Try adding again to overflow
-    if (overflowShelve.addOrder(order)) {
-      logger.debug(String.format("Added Order to Overflow shelve. Order: %s, shelve: %s", order, shelve));
-      return Optional.of(overflowShelve);
-    }
-
-    shelveOrderGarbageCollector.runNow();
-
-    // Try adding again to overflow
+    // Try adding again to overflow after reshuffling orders
     if (overflowShelve.addOrder(order)) {
       logger.debug(String.format("Added Order to Overflow shelve. Order: %s, shelve: %s", order, shelve));
       return Optional.of(overflowShelve);
@@ -99,7 +101,7 @@ public class ShelvesManager {
     return Optional.empty();
   }
 
-  public boolean getOrder(@Nonnull final Order order) {
+  public boolean removeOrder(@Nonnull final Order order) {
     final Shelve shelve = shelves.get(order.getTemp());
 
     if (shelve.hasOrder(order)) {
@@ -138,15 +140,7 @@ public class ShelvesManager {
 
       for (final Temp temp : keySet) {
         final Shelve shelve = shelves.get(temp);
-
-        for (final Iterator<Order> it = shelve.getOrdersIterator(); it.hasNext(); ) {
-          final Order order = it.next();
-
-          if (order.updateAndGetLife() <= 0f) {
-            shelve.removeOrder(order);
-            logger.info(String.format("Removed an expired order %s", order));
-          }
-        }
+        shelve.removeExpiredOrders();
       }
     }
   }

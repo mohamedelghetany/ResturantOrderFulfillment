@@ -65,7 +65,17 @@ public class OrderTest {
     final float expectedLife = ((1 - 0.5f * expectedAge * Temp.COLD.getDecayModifier()) / 1);
 
     Assert.assertEquals(expectedAge, order.getAgeInSeconds(), 0);
-    Assert.assertEquals(expectedLife, order.getOrderLife(), 0);
+    Assert.assertEquals(expectedLife, life, 0);
+  }
+
+  @Test
+  public void testUpdateOrderLifeUpdatesReturn0ForLessThan0ShelfLife () {
+    final long now = System.currentTimeMillis();
+    Order order = new Order("1", "testOrder", Temp.COLD, 0, 0.5f);
+    Assert.assertEquals(0, order.updateAndGetLife(() -> now), 0);
+
+    order = new Order("1", "testOrder", Temp.COLD, -6, 0.5f);
+    Assert.assertEquals(0, order.updateAndGetLife(() -> now), 0);
 
   }
 }
