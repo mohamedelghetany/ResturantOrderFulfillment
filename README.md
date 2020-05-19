@@ -15,7 +15,7 @@ Simple Java Client/ Server (Netty) Order fulfillment
 
 ## Server Design 
 
-Please refer to [Docs Folder](./Server/README.md)
+Please refer to Server [README.md](./Server/README.md)
 
 ## Build 
 
@@ -29,7 +29,7 @@ From Server folder run the following maven command: `mvn exec:java`
 
 Default log level is `INFO` 
 
-To change the level  set `log4j.rootLogger=<Level>` in [log4j2.xml](./src/main/resources/log4j.properties)
+To change the level  set `log4j.rootLogger=<Level>` in [log4j2.xml](./Server/src/main/resources/log4j.properties)
 
 You will need to rebuild the server : `mvn install`
 
@@ -37,9 +37,9 @@ Note: `DEBUG` level is very verbose so setting log level to `DEBUG` will have ne
 
 ## Changing Server Configuration
 
-Configuration is based on Java Properties file [config.properties](./src/main/resources/config.properties)
+Configuration is based on Java Properties file [config.properties](./Server/src/main/resources/config.properties)
 
-All configration have default values, these values are specified at [ServerProperties.java](./src/main/java/common/ServerProperties.java) 
+All configration have default values, these values are specified at [ServerProperties.java](./Server/src/main/java/common/ServerProperties.java) 
 
 Example: 
 
