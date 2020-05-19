@@ -5,7 +5,7 @@ Simple Java/ Netty Order fullfilment Server
 ## Prerequisites
 
 1. java8 [setup](https://www.oracle.com/java/technologies/javase-jre8-downloads.html)
-2. maven [setup](
+2. maven [setup](https://maven.apache.org/install.html)
 
 ## Packages
 
