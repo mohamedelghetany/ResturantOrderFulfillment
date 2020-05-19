@@ -1,14 +1,11 @@
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.RateLimiter;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.client.fluent.Response;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
@@ -20,9 +17,11 @@ import org.apache.log4j.Logger;
 public final class OrderSender {
   private static final Logger logger = Logger.getLogger(OrderSender.class);
   private final CloseableHttpAsyncClient httpClient;
+  private final Executor executor;
 
   public OrderSender() {
     httpClient = HttpAsyncClients.createDefault();
+    executor = Executors.newCachedThreadPool();
     httpClient.start();
   }
 
@@ -32,7 +31,7 @@ public final class OrderSender {
     final RateLimiter rateLimiter = RateLimiter.create(rate);
     IntStream.range(0, 4).forEach(index -> {
       rateLimiter.acquire();
-      sendOrder(orders.get(index));
+      executor.execute(() -> sendOrder(orders.get(index)));
     });
   }
 
