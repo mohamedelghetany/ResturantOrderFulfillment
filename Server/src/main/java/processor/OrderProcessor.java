@@ -19,7 +19,7 @@ public class OrderProcessor implements Runnable {
 
   @Override
   public void run() {
-    logger.info("Starting OrderProcessor thread....");
+    logger.info("Starting OrderProcessor thread.");
     run(() -> true);
   }
 

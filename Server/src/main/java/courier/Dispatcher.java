@@ -19,7 +19,7 @@ public class Dispatcher implements Runnable {
 
   @Override
   public void run() {
-    logger.info("Starting Dispatcher thread....");
+    logger.info("Starting Dispatcher thread.");
     run(() -> true);
   }
 
