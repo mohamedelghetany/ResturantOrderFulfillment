@@ -30,7 +30,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>Main</mainClass>
+                    <mainClass>protocol.RestaurantServer</mainClass>
                 </configuration>
             </plugin>
         </plugins>
