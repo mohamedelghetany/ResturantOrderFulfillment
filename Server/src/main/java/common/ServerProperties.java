@@ -38,7 +38,7 @@ public final class ServerProperties {
 
   public static PropertyKey<Integer> PORT = new IntegerPropertyKey("port", 11211);
   public static PropertyKey<Integer> statsReporterIntervalInMS = new IntegerPropertyKey("statsReporterIntervalInMS", 60000);
-  public static PropertyKey<Integer> orderShelveGarbageCollectorIntervalInMS = new IntegerPropertyKey("orderShelveGarbageCollectorIntervalInMS", 1000);
+  public static PropertyKey<Integer> shelfGarbageCollectorIntervalInMS = new IntegerPropertyKey("shelfGarbageCollectorIntervalInMS", 1000);
   public static PropertyKey<Integer> dispatcherLowWaitTimeInSeconds = new IntegerPropertyKey("dispatcherLowWaitTimeInSeconds", 2);
   public static PropertyKey<Integer> dispatcherHighWaitTimeInSeconds = new IntegerPropertyKey("dispatcherHighWaitTimeInSeconds", 6);
   public static PropertyKey<Integer> numOfThreadsForOrderProcessing = new IntegerPropertyKey("numOfThreadsForOrderProcessing", Runtime.getRuntime().availableProcessors() * 2);

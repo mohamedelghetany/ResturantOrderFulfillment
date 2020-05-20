@@ -10,25 +10,25 @@ import org.apache.log4j.Logger;
 
 /**
  * Encapsulates all the logic of choosing a shelf and placing an order on that shelf. It is a singleton thread-safe class
- * Also this class encapsulates a {@link ShelveOrderGarbageCollector} which is a GC for expired orders.
- * The GC runs on a diff thread on an interval decided by {@link ServerProperties#orderShelveGarbageCollectorIntervalInMS}
+ * Also this class encapsulates {@link ShelfGarbageCollector} which is a GC for expired orders.
+ * The GC runs on a diff thread on an interval decided by {@link ServerProperties#shelfGarbageCollectorIntervalInMS}
  */
 public class ShelvesManager {
   private final static Logger logger = Logger.getLogger(ShelvesManager.class);
   private static volatile ShelvesManager INSTANCE;
 
   private final ConcurrentMap<Temp, Shelf> shelves;
-  private final ShelveOrderGarbageCollector shelveOrderGarbageCollector;
+  private final ShelfGarbageCollector shelfGarbageCollector;
 
   private ShelvesManager() {
     shelves = new ConcurrentHashMap<>();
-    shelveOrderGarbageCollector = new ShelveOrderGarbageCollector();
+    shelfGarbageCollector = new ShelfGarbageCollector();
 
     for (final Temp temp : Temp.values()) {
       shelves.put(temp, new Shelf(temp.getShelfName(), temp.getCapacity(), temp));
     }
 
-    final Thread orderGc = new Thread(shelveOrderGarbageCollector);
+    final Thread orderGc = new Thread(shelfGarbageCollector);
     orderGc.setName("OrdersGarbageCollector");
     orderGc.start();
   }
@@ -119,19 +119,19 @@ public class ShelvesManager {
 
   /**
    * A background thread that will take care of cleaning the shelves from any expired orders
-   * The GC runs on a timer controlled by {@link ServerProperties#orderShelveGarbageCollectorIntervalInMS}
+   * The GC runs on a timer controlled by {@link ServerProperties#shelfGarbageCollectorIntervalInMS}
    */
-  public class ShelveOrderGarbageCollector implements Runnable {
-    private Logger logger = Logger.getLogger(ShelveOrderGarbageCollector.class);
+  public class ShelfGarbageCollector implements Runnable {
+    private Logger logger = Logger.getLogger(ShelfGarbageCollector.class);
 
     @Override
     public void run() {
-      logger.info("Starting ShelveOrderGarbageCollector thread");
+      logger.info("Starting ShelfGarbageCollector thread");
 
       while (true) {
         try {
           runNow();
-          Thread.sleep(ServerProperties.orderShelveGarbageCollectorIntervalInMS.get());
+          Thread.sleep(ServerProperties.shelfGarbageCollectorIntervalInMS.get());
         } catch (final Exception e) {
           // We want this thread to keep running so we don't wanna any exception to escape
           logger.error("Error while collecting order", e);

@@ -81,7 +81,7 @@ This is the main class responsible for managing the shelves which includes placi
 
 **Expired Orders Garbage Collectors**
 
-There is a spearate thread that runs on a configurable intervals and go through all the shelves and remove any expired orders. For more details check [ShelveOrderGarbageCollector](./src/main/java/common/ShelvesManager.java)
+There is a spearate thread that runs on a configurable intervals `shelfGarbageCollectorIntervalInMS` and go through all the shelves and remove any expired orders. For more details check [ShelfGarbageCollector](./src/main/java/common/ShelvesManager.java)
 
 **Consumers Threads**
 

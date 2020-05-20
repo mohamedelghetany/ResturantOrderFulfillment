@@ -10,6 +10,8 @@ import org.junit.Test;
 public class OrderProcessorTest {
   @Test
   public void testOrderProcessorProcessOrderImmediately() {
+    ShelvesManager.reset();
+    
     final MockQueue queue = new MockQueue();
     final Order order = new Order("1235", "Order1", Temp.HOT, 100, 0.1f);
     queue.add(order);
