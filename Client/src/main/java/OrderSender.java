@@ -39,7 +39,7 @@ public final class OrderSender {
     Preconditions.checkNotNull(orders);
 
     final RateLimiter rateLimiter = RateLimiter.create(rate);
-    IntStream.range(0, 4).forEach(index -> {
+    IntStream.range(0, orders.size()).forEach(index -> {
       rateLimiter.acquire();
       executor.execute(() -> sendOrder(orders.get(index)));
     });
