@@ -1,8 +1,11 @@
 package common;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -86,6 +89,20 @@ public class Shelve {
 
   public String getName() {
     return name;
+  }
+
+  public Optional<Order> removeOldestOrder() {
+    if(orders.isEmpty()) {
+      return Optional.empty();
+    }
+
+    final List<Order> values = new ArrayList<>(orders.values());
+    Collections.sort(values, Comparator.comparingLong(Order::getCreateTimeStamp));
+    final Order oldestOrder = values.get(0);
+
+    removeOrder(oldestOrder);
+
+    return Optional.of(oldestOrder);
   }
 
   private String getKey(Order order) {

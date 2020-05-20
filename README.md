@@ -11,7 +11,7 @@ Simple Java Client/ Server (Netty) Order fulfillment
 
 **Server**: Netty Server to process and dispatch orders 
 
-**Client**: Simple client that send orders to the server 
+**Client**: Simple client that send orders to the server. That's where the orders JSON file being parsed and sent to the server
 
 ## Server Design 
 
@@ -46,4 +46,16 @@ Example:
 `public static PropertyKey<Integer> PORT = new IntegerPropertyKey("port", 8080)`
 
 `("port", 8080)`: 1st value is the key, 2nd is the default value so to override the PORT, just add in config.properties `port=1234`
+
+## Changing Client Configuration
+
+Similar to Server Configuration, it is based on Java Properties file [config.properties](./Client/src/main/resources/config.properties)
+
+The only availabe configuration is the `rate` 
+
+In [ClientProperties.java](./Client/src/main/java/ClientProperties.java) 
+
+`public static PropertyKey<Integer> RATE = new IntegerPropertyKey("rate", 2)`
+
+`("rate", 2)`: 1st value is the key, 2nd is the default value so to override the RATE, just add in config.properties `rate=5`
 

@@ -96,7 +96,13 @@ public class ShelvesManager {
       return Optional.of(overflowShelve);
     }
 
-    logger.debug("Could not add order to any shelve!");
+    // remove an order
+    if (overflowShelve.removeOldestOrder().isPresent() && overflowShelve.addOrder(order)) {
+      logger.debug(String.format("Added Order to shelve after force removing another order out. Order: %s, shelve: %s", order, shelve));
+      return Optional.of(overflowShelve);
+    }
+
+    logger.info("Could not add order to any shelve!");
 
     return Optional.empty();
   }

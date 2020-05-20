@@ -1,6 +1,8 @@
 package common;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.junit.Assert;
@@ -75,13 +77,13 @@ public class ShelveManagerTest {
   public void testAddOrderTryToMoveOrdersToTheRightShelveFirstIfPossible() {
     // Fill all the shelves
     final List<Order> ordersHot = createAndAddRandomOrders(Temp.HOT.getCapacity(), Temp.HOT, "ordersHot");
-    final List<Order> ordersCold = createAndAddRandomOrders(Temp.COLD.getCapacity(), Temp.COLD, "ordersCold");
-    final List<Order> ordersFrozen = createAndAddRandomOrders(Temp.FROZEN.getCapacity(), Temp.FROZEN, "ordersFrozen");
+    createAndAddRandomOrders(Temp.COLD.getCapacity(), Temp.COLD, "ordersCold");
+    createAndAddRandomOrders(Temp.FROZEN.getCapacity(), Temp.FROZEN, "ordersFrozen");
 
     // Add more...Will go to Overflow shelf
-    final List<Order> ordersOverflowHot = createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.HOT, "ordersOverflowHot");
-    final List<Order> ordersOverflowCold = createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.COLD, "ordersOverflowCold");
-    final List<Order> ordersOverflowFrozen = createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.FROZEN, "ordersOverflowFrozen");
+    createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.HOT, "ordersOverflowHot");
+    createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.COLD, "ordersOverflowCold");
+    createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.FROZEN, "ordersOverflowFrozen");
 
     // All shelves are fill now, including overflow shelf.
     final ShelvesManager manager = ShelvesManager.getInstance();
@@ -94,6 +96,35 @@ public class ShelveManagerTest {
     Assert.assertTrue(shelve.isPresent());
     Assert.assertEquals(Temp.ANY.getShelfName(), shelve.get().getName());
     Assert.assertEquals(Temp.ANY, shelve.get().getTemperature());
+  }
+
+  @Test
+  public void testAddOrderForceRemoveOrderIfNoOtherOption() {
+    // Fill all the shelves
+    final List<Order> ordersHot = createAndAddRandomOrders(Temp.HOT.getCapacity(), Temp.HOT, "forceHot");
+    createAndAddRandomOrders(Temp.COLD.getCapacity(), Temp.COLD, "forceCold");
+    createAndAddRandomOrders(Temp.FROZEN.getCapacity(), Temp.FROZEN, "forceFrozen");
+
+    // Add more...Will go to Overflow shelf
+    createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.HOT, "forceOverflowHot");
+    createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.COLD, "forceOverflowCold");
+    createAndAddRandomOrders(Temp.ANY.getCapacity() / 2, Temp.FROZEN, "forceOverflowFrozen");
+
+    // All shelves are fill now, including overflow shelf.
+    final ShelvesManager manager = ShelvesManager.getInstance();
+
+    // Add new hot order which will replace the oldest order
+    Collections.sort(ordersHot, Comparator.comparingLong(Order::getCreateTimeStamp));
+    final Order oldest = ordersHot.get(0);
+
+    final Order order = new Order(String.valueOf(2000), "force-1", Temp.HOT, 100, 0.5f);
+    Optional<Shelve> shelve = manager.addOrder(order);
+
+    Assert.assertTrue(shelve.isPresent());
+    Assert.assertEquals(Temp.ANY.getShelfName(), shelve.get().getName());
+    Assert.assertEquals(Temp.ANY, shelve.get().getTemperature());
+    Assert.assertTrue(shelve.get().hasOrder(order));
+    Assert.assertFalse(shelve.get().hasOrder(oldest));
   }
 
   private List<Order> createAndAddRandomOrders(int count, Temp temp, String idPrefix) {

@@ -5,7 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import common.Order;
-import common.Queue;
 import common.RestaurantException;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,9 +14,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.function.Supplier;
-import javax.annotation.Nonnull;
+import mocks.MockQueue;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +67,7 @@ public class OrderHandlerTest {
         "    \"decayRate\": 0.3\n" +
         "  }";
 
-    final MockQueue orderQueue = new MockQueue(() -> false);
+    final MockQueue orderQueue = new MockQueue(() -> false, null);
     final OrderHandler handler = new OrderHandler(orderQueue, new MockQueue());
     final FullHttpRequest fullHttpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "http://localhost:1234", Unpooled.wrappedBuffer(orderStr.getBytes(Charset.defaultCharset())));
 
@@ -91,7 +88,7 @@ public class OrderHandlerTest {
         "    \"decayRate\": 0.4\n" +
         "  }";
 
-    final MockQueue dispatcherQueue = new MockQueue(() -> false);
+    final MockQueue dispatcherQueue = new MockQueue(() -> false, null);
     final OrderHandler handler = new OrderHandler(new MockQueue(), dispatcherQueue);
     final FullHttpRequest fullHttpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "http://localhost:1234", Unpooled.wrappedBuffer(orderStr.getBytes(Charset.defaultCharset())));
 
@@ -114,47 +111,11 @@ public class OrderHandlerTest {
 
     final MockQueue dispatcherQueue = new MockQueue(() -> {
       throw new RuntimeException("Oops, Random error");
-    });
+    }, null);
 
     final OrderHandler handler = new OrderHandler(new MockQueue(), dispatcherQueue);
     final FullHttpRequest fullHttpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "http://localhost:1234", Unpooled.wrappedBuffer(orderStr.getBytes(Charset.defaultCharset())));
 
     handler.channelRead(mockCtx, fullHttpRequest);
-  }
-
-
-  /**
-   * Simple Mock queue class, in PROD queue will probably be a distributed queue like Kafka,...
-   * so this class is a mocking for Unit-test
-   */
-  private class MockQueue implements Queue {
-    final java.util.Queue<Order> queue = new LinkedList<>();
-    private final Supplier<Boolean> addFaultInjectorSupplier;
-
-    public MockQueue() {
-      this(null);
-    }
-
-    public MockQueue(@Nonnull final Supplier<Boolean> addFaultInjectorSupplier) {
-      this.addFaultInjectorSupplier = addFaultInjectorSupplier;
-    }
-
-    @Override
-    public Order fetch() throws InterruptedException {
-      return queue.poll();
-    }
-
-    @Override
-    public boolean add(@Nonnull Order order) {
-      if (addFaultInjectorSupplier != null) {
-        return addFaultInjectorSupplier.get();
-      }
-
-      return queue.add(order);
-    }
-
-    public int size() {
-      return queue.size();
-    }
   }
 }
