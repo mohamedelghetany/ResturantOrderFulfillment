@@ -1,5 +1,6 @@
 package processor;
 
+import common.GlobalStats;
 import common.Order;
 import common.Queue;
 import common.Shelf;
@@ -38,6 +39,7 @@ public class OrderProcessor implements Runnable {
 
         if(shelf.isPresent()){
           logger.info(String.format("Added order to shelf. Order %s -> shelf %s", order, shelf.get()));
+          GlobalStats.getInstance().reportProcessedOrder();
         }else {
           logger.error(String.format("Failed to add an order to any shelf"));
         }

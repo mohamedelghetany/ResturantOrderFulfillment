@@ -1,5 +1,6 @@
 package courier;
 
+import common.GlobalStats;
 import common.Order;
 import common.Queue;
 import common.ServerProperties;
@@ -43,8 +44,10 @@ public class Dispatcher implements Runnable {
 
         if (ShelvesManager.getInstance().removeOrder(order)) {
           logger.info(String.format("Dispatcher picked-up order %s", order));
+          GlobalStats.getInstance().reportDispatchedOrder();
         } else {
           logger.error(String.format("Dispatcher failed to pickup order %s", order));
+          GlobalStats.getInstance().reportFailedDispatch();
         }
       } catch (final Exception e) {
         // We want this thread to keep running so we don't wanna any exception to escape

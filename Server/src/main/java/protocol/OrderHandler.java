@@ -4,6 +4,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import common.GlobalStats;
 import common.Order;
 import common.Queue;
 import common.RestaurantException;
@@ -38,6 +39,7 @@ public class OrderHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
       final Order order = Order.createFromJson(strOrder);
 
       logger.info("Received order " + order);
+      GlobalStats.getInstance().reportReceivedOrder();
 
       final boolean addOrderQueueResult = orderQueue.add(order);
       final boolean dispatcherQueueAddResult = dispatcherQueue.add(order);

@@ -99,6 +99,7 @@ public class ShelvesManager {
     // remove an order
     if (overflowShelf.removeOldestOrder().isPresent() && overflowShelf.addOrder(order)) {
       logger.debug(String.format("Added Order to shelf after force removing another order out. Order: %s, shelf: %s", order, shelf));
+      GlobalStats.getInstance().reportDiscardedOrder();
       return Optional.of(overflowShelf);
     }
 

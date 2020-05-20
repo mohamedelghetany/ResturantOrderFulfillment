@@ -1,5 +1,6 @@
 package protocol;
 
+import common.GlobalStats;
 import common.OrdersQueue;
 import common.Queue;
 import common.ServerProperties;
@@ -47,6 +48,7 @@ public class RestaurantServer {
     final EventLoopGroup workerGroup = new NioEventLoopGroup(nettyWorkerThreadCount);
 
     try {
+      GlobalStats.getInstance().initialize();
       final Queue orderQueue = new OrdersQueue();
       final Queue dispatcherQueue = new OrdersQueue();
       final OrderProcessorManager orderProcessorManager = new OrderProcessorManager(orderQueue);

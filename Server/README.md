@@ -87,7 +87,15 @@ There is a spearate thread that runs on a configurable intervals `shelfGarbageCo
 
 Number of consumers `OrderProcessor` or `Dispatcher` is configurable using property `numOfThreadsForOrderProcessing` & `numOfThreadsForDispatching` The default value is #of available processors. Check out [DispatcherManager](./src/main/java/courier/DispatcherManager.java) and [OrderProcessorManager](./src/main/java/processor/OrderProcessorManager.java) and [ServerProperties.java](./src/main/java/common/ServerProperties.java) 
 
+## Reporting
 
+Currently Server reporting is limitted. We only have a thread that runs every X mins (default is 1 min) and will "report"* some stats. 
+
+`GlobalStats` currenly has, `receivedOrdersCount`, `processedOrdersCount`, `discardedOrdersCount`, `dispatchedOrdersCount`, `failedToDispatchCount` 
+
+`[GlobalStats-StatsReporter] common.GlobalStats$StatsReporter  - GlobalStats - # Received Orders: 132, # Processed Orders: 132, # Dispatched Orders: 132, # Discarded Orders: 0, # Failed Pickup 0`
+
+*"Report" in the current system means Log, but that can be changed to publish these KPIs to another service and setup alerting around it 
 
 
 
