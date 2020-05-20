@@ -13,10 +13,10 @@ import javax.annotation.Nonnull;
 import org.apache.log4j.Logger;
 
 /**
- * Encapsulate a "Shelve" with a list of Orders on it
+ * Encapsulate a "Shelf" with a list of Orders on it
  */
-public class Shelve {
-  private static Logger logger = Logger.getLogger(Shelve.class);
+public class Shelf {
+  private static Logger logger = Logger.getLogger(Shelf.class);
 
   private final String name;
   private final int capacity;
@@ -24,7 +24,7 @@ public class Shelve {
   private final ConcurrentMap<String, Order> orders;
   private AtomicInteger count;
 
-  public Shelve(@Nonnull final String name, final int capacity, @Nonnull final Temp temperature) {
+  public Shelf(@Nonnull final String name, final int capacity, @Nonnull final Temp temperature) {
     this.name = name;
     this.capacity = capacity;
     this.temperature = temperature;

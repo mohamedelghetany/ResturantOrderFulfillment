@@ -65,7 +65,7 @@ Once an order makes it to the queue, another set of threads (Consumers) are wait
 
 Two set of consumers (that runs in **Parallel**)
 
-<u>Order Processor</u>: Process the order then one the order has been processed, it will be added to the right shelve following the set of rules specified in the exercise   
+<u>Order Processor</u>: Process the order then one the order has been processed, it will be added to the right shelf following the set of rules specified in the exercise   
 
 <u>Order Dispatcher</u>: Dispatch the order, wait and pickup the order once available 
 
@@ -77,7 +77,7 @@ This digaram will make it more clear
 
 **ShelvesManager class** 
 
-This is the main class responsible for managing the shelves which includes placing the orders on the right shelve using the roles specified in the exercise. For more details check [ShelvesManager](./src/main/java/common/ShelvesManager.java) 
+This is the main class responsible for managing the shelves which includes placing the orders on the right shelf using the roles specified in the exercise. For more details check [ShelvesManager](./src/main/java/common/ShelvesManager.java) 
 
 **Expired Orders Garbage Collectors**
 

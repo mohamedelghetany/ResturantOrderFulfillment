@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ShelveManagerTest {
+public class ShelfManagerTest {
 
   @Before
   public void init() {
@@ -22,11 +22,11 @@ public class ShelveManagerTest {
 
     final Order order = new Order("100", "testOrder", Temp.COLD, 1, 0.5f);
     final ShelvesManager manager = ShelvesManager.getInstance();
-    final Optional<Shelve> shelve = manager.addOrder(order);
+    final Optional<Shelf> shelf = manager.addOrder(order);
 
-    Assert.assertTrue(shelve.isPresent());
-    Assert.assertEquals(Temp.ANY.getShelfName(), shelve.get().getName());
-    Assert.assertEquals(Temp.ANY, shelve.get().getTemperature());
+    Assert.assertTrue(shelf.isPresent());
+    Assert.assertEquals(Temp.ANY.getShelfName(), shelf.get().getName());
+    Assert.assertEquals(Temp.ANY, shelf.get().getTemperature());
   }
 
   @Test
@@ -37,19 +37,19 @@ public class ShelveManagerTest {
 
     final ShelvesManager manager = ShelvesManager.getInstance();
 
-    final Optional<Shelve> shelveCold = manager.addOrder(coldOrder);
+    final Optional<Shelf> shelveCold = manager.addOrder(coldOrder);
     Assert.assertTrue(shelveCold.isPresent());
     Assert.assertEquals(Temp.COLD.getShelfName(), shelveCold.get().getName());
     Assert.assertEquals(Temp.COLD, shelveCold.get().getTemperature());
     Assert.assertTrue(shelveCold.get().hasOrder(coldOrder));
 
-    final Optional<Shelve> shelveHot = manager.addOrder(hotOrder);
+    final Optional<Shelf> shelveHot = manager.addOrder(hotOrder);
     Assert.assertTrue(shelveHot.isPresent());
     Assert.assertEquals(Temp.HOT.getShelfName(), shelveHot.get().getName());
     Assert.assertEquals(Temp.HOT, shelveHot.get().getTemperature());
     Assert.assertTrue(shelveHot.get().hasOrder(hotOrder));
 
-    final Optional<Shelve> shelveFrozen = manager.addOrder(frozenOrder);
+    final Optional<Shelf> shelveFrozen = manager.addOrder(frozenOrder);
     Assert.assertTrue(shelveFrozen.isPresent());
     Assert.assertEquals(Temp.FROZEN.getShelfName(), shelveFrozen.get().getName());
     Assert.assertEquals(Temp.FROZEN, shelveFrozen.get().getTemperature());
@@ -66,11 +66,11 @@ public class ShelveManagerTest {
 
     final Order order = new Order(String.valueOf(100), "newOrder-100", Temp.HOT, 100, 0.5f);
 
-    Optional<Shelve> shelve = manager.addOrder(order);
+    Optional<Shelf> shelf = manager.addOrder(order);
 
-    Assert.assertTrue(shelve.isPresent());
-    Assert.assertEquals(Temp.HOT.getShelfName(), shelve.get().getName());
-    Assert.assertEquals(Temp.HOT, shelve.get().getTemperature());
+    Assert.assertTrue(shelf.isPresent());
+    Assert.assertEquals(Temp.HOT.getShelfName(), shelf.get().getName());
+    Assert.assertEquals(Temp.HOT, shelf.get().getTemperature());
   }
 
   @Test
@@ -91,11 +91,11 @@ public class ShelveManagerTest {
 
     // Add new cold order, cold shelf is full so it should go to overflow after moving one Hot order to Hot shelf
     final Order order = new Order(String.valueOf(2000), "newOrderCold-100", Temp.COLD, 100, 0.5f);
-    Optional<Shelve> shelve = manager.addOrder(order);
+    Optional<Shelf> shelf = manager.addOrder(order);
 
-    Assert.assertTrue(shelve.isPresent());
-    Assert.assertEquals(Temp.ANY.getShelfName(), shelve.get().getName());
-    Assert.assertEquals(Temp.ANY, shelve.get().getTemperature());
+    Assert.assertTrue(shelf.isPresent());
+    Assert.assertEquals(Temp.ANY.getShelfName(), shelf.get().getName());
+    Assert.assertEquals(Temp.ANY, shelf.get().getTemperature());
   }
 
   @Test
@@ -118,13 +118,13 @@ public class ShelveManagerTest {
     final Order oldest = ordersHot.get(0);
 
     final Order order = new Order(String.valueOf(2000), "force-1", Temp.HOT, 100, 0.5f);
-    Optional<Shelve> shelve = manager.addOrder(order);
+    Optional<Shelf> shelf = manager.addOrder(order);
 
-    Assert.assertTrue(shelve.isPresent());
-    Assert.assertEquals(Temp.ANY.getShelfName(), shelve.get().getName());
-    Assert.assertEquals(Temp.ANY, shelve.get().getTemperature());
-    Assert.assertTrue(shelve.get().hasOrder(order));
-    Assert.assertFalse(shelve.get().hasOrder(oldest));
+    Assert.assertTrue(shelf.isPresent());
+    Assert.assertEquals(Temp.ANY.getShelfName(), shelf.get().getName());
+    Assert.assertEquals(Temp.ANY, shelf.get().getTemperature());
+    Assert.assertTrue(shelf.get().hasOrder(order));
+    Assert.assertFalse(shelf.get().hasOrder(oldest));
   }
 
   private List<Order> createAndAddRandomOrders(int count, Temp temp, String idPrefix) {

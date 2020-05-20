@@ -2,7 +2,7 @@ package processor;
 
 import common.Order;
 import common.Queue;
-import common.Shelve;
+import common.Shelf;
 import common.ShelvesManager;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -34,20 +34,18 @@ public class OrderProcessor implements Runnable {
         final Order order = queue.fetch();
         logger.info(String.format("Processing order %s", order));
 
-        final Optional<Shelve> shelve = ShelvesManager.getInstance().addOrder(order);
+        final Optional<Shelf> shelf = ShelvesManager.getInstance().addOrder(order);
 
-        if(shelve.isPresent()){
-          logger.info(String.format("Added order to shelve %s", shelve.get()));
+        if(shelf.isPresent()){
+          logger.info(String.format("Added order to shelf. Order %s shelf", order, shelf.get()));
         }else {
-          logger.error(String.format("Failed to add an order to any shelve"));
+          logger.error(String.format("Failed to add an order to any shelf"));
         }
 
       } catch (final Exception e) {
         // We want this thread to keep running so we don't wanna any exception to escape
         // In here we will just log, yes we might have failed to process this order and
-        // we might need to enqueue the order again or Alert
-
-        //TODO: stats
+        // we might need to enqueue the order again or Alert. For now lets log
         logger.error("Error while pooling from the queue", e);
       }
     }

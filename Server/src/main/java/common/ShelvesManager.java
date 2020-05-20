@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import org.apache.log4j.Logger;
 
 /**
- * Encapsulates all the logic of choosing a shelve and placing an order on that shelve. It is a singleton thread-safe class
+ * Encapsulates all the logic of choosing a shelf and placing an order on that shelf. It is a singleton thread-safe class
  * Also this class encapsulates a {@link ShelveOrderGarbageCollector} which is a GC for expired orders.
  * The GC runs on a diff thread on an interval decided by {@link ServerProperties#orderShelveGarbageCollectorIntervalInMS}
  */
@@ -17,7 +17,7 @@ public class ShelvesManager {
   private final static Logger logger = Logger.getLogger(ShelvesManager.class);
   private static volatile ShelvesManager INSTANCE;
 
-  private final ConcurrentMap<Temp, Shelve> shelves;
+  private final ConcurrentMap<Temp, Shelf> shelves;
   private final ShelveOrderGarbageCollector shelveOrderGarbageCollector;
 
   private ShelvesManager() {
@@ -25,7 +25,7 @@ public class ShelvesManager {
     shelveOrderGarbageCollector = new ShelveOrderGarbageCollector();
 
     for (final Temp temp : Temp.values()) {
-      shelves.put(temp, new Shelve(temp.getShelfName(), temp.getCapacity(), temp));
+      shelves.put(temp, new Shelf(temp.getShelfName(), temp.getCapacity(), temp));
     }
 
     final Thread orderGc = new Thread(shelveOrderGarbageCollector);
@@ -53,65 +53,65 @@ public class ShelvesManager {
    * Handles adding Order to a shelves
    *
    * @param order to be added
-   * @return {@link Shelve} that the order added to, {@link Optional#empty()} if no shelves are available
+   * @return {@link Shelf} that the order added to, {@link Optional#empty()} if no shelves are available
    */
-  public Optional<Shelve> addOrder(@Nonnull final Order order) {
-    // Clean-up the shelve (remove expired orders)
-    // Try adding the order to its shelve
-    final Shelve shelve = shelves.get(order.getTemp());
+  public Optional<Shelf> addOrder(@Nonnull final Order order) {
+    // Clean-up the shelf (remove expired orders)
+    // Try adding the order to its shelf
+    final Shelf shelf = shelves.get(order.getTemp());
 
-    shelve.removeExpiredOrders();
+    shelf.removeExpiredOrders();
 
-    if (shelve.addOrder(order)) {
-      logger.debug(String.format("Added Order to shelve. Order: %s, shelve: %s", order, shelve));
-      return Optional.of(shelve);
+    if (shelf.addOrder(order)) {
+      logger.debug(String.format("Added Order to shelf. Order: %s, shelf: %s", order, shelf));
+      return Optional.of(shelf);
     }
 
-    // Order's shelve is full so lets
-    // try the overflow shelve
-    final Shelve overflowShelve = shelves.get(Temp.ANY);
+    // Order's shelf is full so lets
+    // try the overflow shelf
+    final Shelf overflowShelf = shelves.get(Temp.ANY);
 
-    overflowShelve.removeExpiredOrders();
+    overflowShelf.removeExpiredOrders();
 
-    if (overflowShelve.addOrder(order)) {
-      logger.debug(String.format("Added Order to Overflow shelve. Order: %s, shelve: %s", order, shelve));
-      return Optional.of(overflowShelve);
+    if (overflowShelf.addOrder(order)) {
+      logger.debug(String.format("Added Order to Overflow shelf. Order: %s, shelf: %s", order, shelf));
+      return Optional.of(overflowShelf);
     }
 
     // Overflow is full so lets try to move any order out of overflow
-    // either by moving it to the right shelve or completely discard it
+    // either by moving it to the right shelf or completely discard it
     // because it is expired
 
-    for (Iterator<Order> it = overflowShelve.getOrdersIterator(); it.hasNext(); ) {
+    for (Iterator<Order> it = overflowShelf.getOrdersIterator(); it.hasNext(); ) {
       final Order overflowOrder = it.next();
       if (shelves.get(overflowOrder.getTemp()).addOrder(overflowOrder)) {
-        overflowShelve.removeOrder(overflowOrder);
-        logger.debug(String.format("Moved Order. From Overflow shelve to %s shelve. Order: %s", shelve, order));
+        overflowShelf.removeOrder(overflowOrder);
+        logger.debug(String.format("Moved Order. From Overflow shelf to %s shelf. Order: %s", shelf, order));
       }
     }
 
     // Try adding again to overflow after reshuffling orders
-    if (overflowShelve.addOrder(order)) {
-      logger.debug(String.format("Added Order to Overflow shelve. Order: %s, shelve: %s", order, shelve));
-      return Optional.of(overflowShelve);
+    if (overflowShelf.addOrder(order)) {
+      logger.debug(String.format("Added Order to Overflow shelf. Order: %s, shelf: %s", order, shelf));
+      return Optional.of(overflowShelf);
     }
 
     // remove an order
-    if (overflowShelve.removeOldestOrder().isPresent() && overflowShelve.addOrder(order)) {
-      logger.debug(String.format("Added Order to shelve after force removing another order out. Order: %s, shelve: %s", order, shelve));
-      return Optional.of(overflowShelve);
+    if (overflowShelf.removeOldestOrder().isPresent() && overflowShelf.addOrder(order)) {
+      logger.debug(String.format("Added Order to shelf after force removing another order out. Order: %s, shelf: %s", order, shelf));
+      return Optional.of(overflowShelf);
     }
 
-    logger.info("Could not add order to any shelve!");
+    logger.info("Could not add order to any shelf!");
 
     return Optional.empty();
   }
 
   public boolean removeOrder(@Nonnull final Order order) {
-    final Shelve shelve = shelves.get(order.getTemp());
+    final Shelf shelf = shelves.get(order.getTemp());
 
-    if (shelve.hasOrder(order)) {
-      return shelve.removeOrder(order);
+    if (shelf.hasOrder(order)) {
+      return shelf.removeOrder(order);
     }
 
     return false;
@@ -126,7 +126,7 @@ public class ShelvesManager {
 
     @Override
     public void run() {
-      logger.info("Starting ShelveOrderGarbageCollector thread....");
+      logger.info("Starting ShelveOrderGarbageCollector thread");
 
       while (true) {
         try {
@@ -145,8 +145,8 @@ public class ShelvesManager {
       final Set<Temp> keySet = shelves.keySet();
 
       for (final Temp temp : keySet) {
-        final Shelve shelve = shelves.get(temp);
-        shelve.removeExpiredOrders();
+        final Shelf shelf = shelves.get(temp);
+        shelf.removeExpiredOrders();
       }
     }
   }
