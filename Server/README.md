@@ -71,7 +71,7 @@ Two set of consumers (that runs in **Parallel**)
 
 This digaram will make it more clear 
 
-![sequence_diagram](src/main/resources/docs/sequence_diagram_1.png)
+![sequence_diagram](src/main/resources/docs/sequence_diagram.png)
 
 ## More Design details 
 
