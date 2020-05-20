@@ -35,6 +35,16 @@ You will need to rebuild the server : `mvn install`
 
 Note: `DEBUG` level is very verbose so setting log level to `DEBUG` will have negative effet on performance.
 
+## Reporting
+
+Currently Server reporting is limitted. We only have a thread that runs every X mins (default is 1 min) and will "report"* some stats. 
+
+`GlobalStats` currenly has, `receivedOrdersCount`, `processedOrdersCount`, `discardedOrdersCount`, `dispatchedOrdersCount`, `failedToDispatchCount` 
+
+`[GlobalStats-StatsReporter] common.GlobalStats$StatsReporter  - GlobalStats - # Received Orders: 132, # Processed Orders: 132, # Dispatched Orders: 132, # Discarded Orders: 0, # Failed Pickup 0`
+
+*"Report" in the current system means Log, but that can be changed to publish these KPIs to another service and setup alerting around it 
+
 ## Changing Server Configuration
 
 Configuration is based on Java Properties file [config.properties](./Server/src/main/resources/config.properties)
