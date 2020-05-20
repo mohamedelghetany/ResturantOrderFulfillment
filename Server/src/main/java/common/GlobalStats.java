@@ -28,6 +28,7 @@ public class GlobalStats {
   private AtomicInteger processedOrdersCount = new AtomicInteger();
   private AtomicInteger dispatchedOrdersCount = new AtomicInteger();
   private AtomicInteger failedToDispatchCount = new AtomicInteger();
+  private AtomicInteger expiredOrdersCount = new AtomicInteger();
 
   private GlobalStats() {
     final Thread statsReporterThread = new Thread(new StatsReporter());
@@ -70,9 +71,13 @@ public class GlobalStats {
   public void reportDispatchedOrder() {
     dispatchedOrdersCount.addAndGet(1);
   }
-  
+
   public void reportFailedDispatch() {
     failedToDispatchCount.addAndGet(1);
+  }
+
+  public void reportExpiredOrder() {
+    expiredOrdersCount.addAndGet(1);
   }
 
   public AtomicInteger getReceivedOrdersCount() {
@@ -95,6 +100,10 @@ public class GlobalStats {
     return failedToDispatchCount;
   }
 
+  public AtomicInteger getExpiredOrdersCount() {
+    return expiredOrdersCount;
+  }
+
   public static class StatsReporter implements Runnable {
     private static final Logger logger = Logger.getLogger(StatsReporter.class);
 
@@ -104,12 +113,13 @@ public class GlobalStats {
         logger.info("Starting GlobalStats reporter");
 
         while (true) {
-          final String report = String.format("GlobalStats - # Received Orders: %d, # Processed Orders: %d, # Dispatched Orders: %d, # Discarded Orders: %d, # Failed Pickup: %d",
+          final String report = String.format("GlobalStats - # Received Orders: %d, # Processed Orders: %d, # Dispatched Orders: %d, # Discarded Orders: %d, # Failed Pickup: %d, # Expired: %d",
               GlobalStats.getInstance().getReceivedOrdersCount().get(),
               GlobalStats.getInstance().getProcessedOrdersCount().get(),
               GlobalStats.getInstance().getDispatchedOrdersCount().get(),
               GlobalStats.getInstance().getDiscardedOrdersCount().get(),
-              GlobalStats.getInstance().getFailedToDispatchCount().get());
+              GlobalStats.getInstance().getFailedToDispatchCount().get(),
+              GlobalStats.getInstance().getExpiredOrdersCount().get());
 
           logger.info(report);
 

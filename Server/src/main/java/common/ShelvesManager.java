@@ -110,12 +110,7 @@ public class ShelvesManager {
 
   public boolean removeOrder(@Nonnull final Order order) {
     final Shelf shelf = shelves.get(order.getTemp());
-
-    if (shelf.hasOrder(order)) {
-      return shelf.removeOrder(order);
-    }
-
-    return false;
+    return shelf.removeOrder(order);
   }
 
   /**

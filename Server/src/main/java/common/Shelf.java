@@ -72,6 +72,7 @@ public class Shelf {
         removeOrder(order);
         logger.info(String.format("Removed an expired order %s", order));
         result.add(order);
+        GlobalStats.getInstance().reportExpiredOrder();
       }
     }
 
