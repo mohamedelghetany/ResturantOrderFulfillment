@@ -37,7 +37,7 @@ public class OrderProcessor implements Runnable {
         final Optional<Shelf> shelf = ShelvesManager.getInstance().addOrder(order);
 
         if(shelf.isPresent()){
-          logger.info(String.format("Added order to shelf. Order %s shelf", order, shelf.get()));
+          logger.info(String.format("Added order to shelf. Order %s -> shelf %s", order, shelf.get()));
         }else {
           logger.error(String.format("Failed to add an order to any shelf"));
         }

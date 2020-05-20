@@ -7,6 +7,8 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import common.Order;
 import common.Queue;
 import common.RestaurantException;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -40,7 +42,8 @@ public class OrderHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
       final boolean addOrderQueueResult = orderQueue.add(order);
       final boolean dispatcherQueueAddResult = dispatcherQueue.add(order);
 
-      ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, (addOrderQueueResult && dispatcherQueueAddResult) ? OK : SERVICE_UNAVAILABLE));
+      ChannelFuture channelFuture = ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, (addOrderQueueResult && dispatcherQueueAddResult) ? OK : SERVICE_UNAVAILABLE));
+      channelFuture.addListener(ChannelFutureListener.CLOSE);
 
     } catch (final Exception e) {
       final String errorMessage = String.format("Error while processing order %s", strOrder);

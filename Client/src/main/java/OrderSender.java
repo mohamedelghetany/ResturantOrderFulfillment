@@ -46,7 +46,7 @@ public final class OrderSender {
   }
 
   private boolean sendOrder(@Nonnull final Order order) {
-    logger.info(String.format("Sending Order %s", order));
+    logger.debug(String.format("Sending Order %s", order));
 
     final HttpPost request = new HttpPost("http://localhost:8080");
     request.setEntity(new StringEntity(order.toString(), ContentType.APPLICATION_JSON));
@@ -54,7 +54,7 @@ public final class OrderSender {
     httpClient.execute(request, new FutureCallback<HttpResponse>() {
       @Override
       public void completed(HttpResponse httpResponse) {
-        logger.debug(String.format("Order Sent %s Status %s", order, httpResponse.getStatusLine()));
+        logger.info(String.format("Order Sent %s Status %s", order, httpResponse.getStatusLine()));
       }
 
       @Override

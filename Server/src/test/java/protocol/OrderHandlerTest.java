@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import common.Order;
 import common.RestaurantException;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -27,6 +28,8 @@ public class OrderHandlerTest {
   @Before
   public void initialize() {
     mockCtx = BDDMockito.mock(ChannelHandlerContext.class);
+    ChannelFuture mockChannelFuture = BDDMockito.mock(ChannelFuture.class);
+    Mockito.when(mockCtx.writeAndFlush(Mockito.any())).thenReturn(mockChannelFuture);
   }
 
   @Test
